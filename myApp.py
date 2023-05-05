@@ -124,7 +124,8 @@ def _generate_record() -> None:
 def _selection() -> None:
     try:
         with Session(ENGINE) as session:
-            stmt = select(User).where(User.surname.startswith('F'), User.sex == 'male')
+            stmt = select(User).where(User.surname.startswith('F'),
+                                      User.sex == 'male')
 
         for user in session.scalars(stmt):
             print(user)

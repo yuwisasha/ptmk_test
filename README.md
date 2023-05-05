@@ -4,8 +4,9 @@
 
 ### Run:
 Create a db named ptmk
-After that:
+and after that run program via terminal:
 ```
+git clone https://github.com/yuwisasha/ptmk_test.git
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
