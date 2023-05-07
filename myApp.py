@@ -61,10 +61,9 @@ def _create_table() -> None:
     """
     try:
         Base.metadata.create_all(ENGINE)
+        print('Table \'user\' has been created')
     except Exception:
         print('Something goes wrong when creating table')
-    finally:
-        print('Table \'user\' has been created')
 
 
 def _create_record(record_data: list[str]) -> None:
@@ -83,11 +82,10 @@ def _create_record(record_data: list[str]) -> None:
 
         session.add(user)
         session.commit()
+        print('User added successfully')
 
     except Exception:
         print('Not enough arguments, or some data is wrong')
-    finally:
-        print('User added successfully')
 
 
 def _sort_records() -> None:
@@ -148,11 +146,10 @@ def _fill_table() -> None:
 
             print('Commiting changes...')
             session.commit()
+            print('Records have been generated')
 
     except Exception as ex:
         print(ex)
-    finally:
-        print('Records have been generated')
 
 
 @timer
