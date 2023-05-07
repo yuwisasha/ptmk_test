@@ -3,7 +3,7 @@
 ## Python 3.11.3 + PostgreSQL 15.1:
 
 ### Run:
-Create a db named ptmk
+Create a db named "ptmk"
 and after that run program via terminal:
 ```
 git clone https://github.com/yuwisasha/ptmk_test.git
