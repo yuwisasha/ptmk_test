@@ -1,20 +1,28 @@
-import psycopg2
 import argparse
 import random
 import time
 import config
 
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session
-from sqlalchemy.orm import mapped_column
-from sqlalchemy import Integer, String, Date, Engine
+from db import User, Base
+
+from tqdm import tqdm
+from datetime import date
+from functools import wraps
+
+from sqlalchemy.orm import Session
+from sqlalchemy import Engine
 from sqlalchemy import create_engine, select
 
 
-_PERSON_NAME = 'Alexanrdr', 'Maria', 'Natalia', 'Anton', 'Fedor', 'Timur'
-_PERSON_SURNAME = 'Fillimonov', 'Fillipov', 'Panteleev', 'Vavilov', 'Karatenkov'
-_PERSON_PATRONYMIC = 'Sergeevich', 'Konstantinovich', 'Alexandrovich', 'Olegovich'
-_DATES_OF_BIRTH = '26.05.2000', '12.07.1989', '13.04.1992', '16.09.1997', '22.06.1985'
-_SEX = 'male', 'female'
+_PERSON_NAME = ('Alexanrdr', 'Maria', 'Natalia',
+                'Anton', 'Fedor', 'Timur')
+_PERSON_SURNAME = ('Fillimonova', 'Fillipov', 'Panteleev',
+                   'Vavilov', 'Karatenkov')
+_PERSON_PATRONYMIC = ('Sergeevich', 'Konstantinovich',
+                      'Alexandrovich', 'Olegovna')
+_DATES_OF_BIRTH = ('26.05.2000', '12.07.1989', '13.04.1992',
+                   '16.09.1997', '22.06.1985')
+_SEX = ('male', 'female')
 
 
 try:
@@ -23,27 +31,14 @@ except Exception as ex:
     print(ex)
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-class User(Base):
-    """
-    User representation in a database
-    """
-    __tablename__ = 'user'
-
-    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
-    surname: Mapped[str] = mapped_column(String(20), nullable=False)
-    name: Mapped[str] = mapped_column(String(20), nullable=False)
-    patronymic: Mapped[str] = mapped_column(String(20), nullable=False)
-    birthdate: Mapped[str] = mapped_column(Date(), nullable=False)
-    sex: Mapped[str] = mapped_column(String(6))
-
-    def __repr__(self):
-        return f"""id: {self.id} \nSurname: {self.surname}
-                   \rName: {self.name} \nPatronymic: {self.patronymic}
-                   \rBirth date: {self.birthdate} \nSex: {self.sex} \n"""
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> None:
+        start = time.time()
+        func(*args, **kwargs)
+        end = time.time() - start
+        print(end)
+    return wrapper
 
 
 def _parse_args() -> argparse.Namespace:
@@ -60,17 +55,22 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _create_table(engine: Engine) -> None:
+def _create_table() -> None:
     """
     Create table named - user
     """
     try:
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(ENGINE)
     except Exception:
         print('Something goes wrong when creating table')
+    finally:
+        print('Table \'user\' has been created')
 
 
 def _create_record(record_data: list[str]) -> None:
+    """
+    Create record using terminal
+    """
     try:
         with Session(ENGINE) as session:
             user = User(
@@ -84,72 +84,106 @@ def _create_record(record_data: list[str]) -> None:
         session.add(user)
         session.commit()
 
-    except Exception as ex:
-        print(ex)
+    except Exception:
+        print('Not enough arguments, or some data is wrong')
+    finally:
+        print('User added successfully')
 
 
 def _sort_records() -> None:
+    """
+    Select record with unique fullname + birthdate,
+    sorted by fullname
+    """
     try:
         with Session(ENGINE) as session:
-            stmt = select(User).distinct(User.surname, User.name,
-                                         User.patronymic, User.birthdate,) \
-                                         .order_by(User.surname, User.name,
-                                                   User.patronymic,)
+            stmt = select(User) \
+                    .distinct(User.surname, User.name,
+                              User.patronymic, User.birthdate) \
+                    .order_by(User.surname, User.name,
+                              User.patronymic)
 
-        for user in session.scalars(stmt):
-            print(user)
+        today = date.today()
+
+        for user in tqdm(session.scalars(stmt)):
+            age: int = (today.year - user.birthdate.year)
+            if user.birthdate.month >= today.month and \
+               user.birthdate.day > today.day:
+                age -= 1
+            print(user, f'Age: {age}', '\n', sep='')
 
     except Exception as ex:
         print(ex)
 
 
-def _generate_record() -> None:
+def _fill_table() -> None:
+    """
+    Generating 1.000.000 random records
+    and 100 records with a surname starts with letter "F"
+    """
     try:
         with Session(ENGINE) as session:
-            user = User(
-                surname=f'{random.choice(_PERSON_SURNAME)}',
-                name=f'{random.choice(_PERSON_NAME)}',
-                patronymic=f'{random.choice(_PERSON_PATRONYMIC)}',
-                birthdate=f'{random.choice(_DATES_OF_BIRTH)}',
-                sex=f'{random.choice(_SEX)}',
-            )
+            print('Generating records...')
+            for _ in tqdm(range(1000000)):
+                user = User(
+                    surname=f'{random.choice(_PERSON_SURNAME[2:])}',
+                    name=f'{random.choice(_PERSON_NAME)}',
+                    patronymic=f'{random.choice(_PERSON_PATRONYMIC)}',
+                    birthdate=f'{random.choice(_DATES_OF_BIRTH)}',
+                    sex=f'{random.choice(_SEX)}',
+                )
 
-        session.add(user)
-        session.commit()
+                session.add(user)
+
+            for _ in tqdm(range(100)):
+                user = User(
+                    surname=f'{random.choice(_PERSON_SURNAME[:2])}',
+                    name=f'{random.choice(_PERSON_NAME)}',
+                    patronymic=f'{random.choice(_PERSON_PATRONYMIC)}',
+                    birthdate=f'{random.choice(_DATES_OF_BIRTH)}',
+                    sex=f'{(_SEX[0])}',
+                )
+
+                session.add(user)
+
+            print('Commiting changes...')
+            session.commit()
 
     except Exception as ex:
         print(ex)
+    finally:
+        print('Records have been generated')
 
 
+@timer
 def _selection() -> None:
+    """
+    Select users which surname starts with "F" and sex == male
+    """
     try:
         with Session(ENGINE) as session:
             stmt = select(User).where(User.surname.startswith('F'),
                                       User.sex == 'male')
 
-        for user in session.scalars(stmt):
+        for user in tqdm(session.scalars(stmt)):
             print(user)
 
     except Exception as ex:
         print(ex)
 
 
-def _task_manager(task_number: int, record_data: list[str] = []) -> None:
+def _task_manager(task_number: int, record_data: list[str]) -> None:
     match task_number:
         case 1:
-            _create_table(engine=ENGINE)
+            _create_table()
         case 2:
             _create_record(record_data)
         case 3:
             _sort_records()
         case 4:
-            for _ in range(1000000):
-                _generate_record()
+            _fill_table()
         case 5:
-            start = time.time()
             _selection()
-            end = time.time() - start
-            print(end)
 
 
 def _main() -> None:
