@@ -14,8 +14,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python myApp.py *from 1 to 5*
 ```
-* *1* Creates a table with fields as fullname, birthdate, sex.
-* *2* Put record into db ```python myApp.py Panteleev Alexandr Sergeevich 26.05.2000 Male``` for example
-* *3* Print all records with unique fullname+birthdate sorted by fullname, prints fullname, birthdate, sex, years
-* *4* Generating 1.000.000 random records and 100 records with a surname starts with letter "F"
-* *5* Print all records which has sex=Male and fullname=startswith("F")
+* ```1``` Creates a table with fields as fullname, birthdate, sex.
+* ```2``` Put record into db ```python myApp.py Panteleev Alexandr Sergeevich 26.05.2000 Male``` for example
+* ```3``` Print all records with unique fullname+birthdate sorted by fullname, prints fullname, birthdate, sex, years
+* ```4``` Generating 1.000.000 random records and 100 records with a surname starts with letter "F"
+* ```5``` Print all records which has sex=Male and fullname=startswith("F")
