@@ -19,3 +19,5 @@ python myApp.py *from 1 to 5*
 * ```3``` Print all records with unique fullname+birthdate sorted by fullname, prints fullname, birthdate, sex, years
 * ```4``` Generating 1.000.000 random records and 100 records with a surname starts with letter "F"
 * ```5``` Print all records which has sex=Male and fullname=startswith("F")
+
+![изображение](https://github.com/yuwisasha/ptmk_test/assets/113836827/fc6cd43c-73e7-4190-b31f-7d8d20680c08)
