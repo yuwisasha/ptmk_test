@@ -21,3 +21,4 @@ python myApp.py *from 1 to 5*
 * ```5``` Print all records which has sex=Male and fullname=startswith("F")
 
 ![изображение](https://github.com/yuwisasha/ptmk_test/assets/113836827/fc6cd43c-73e7-4190-b31f-7d8d20680c08)
+![изображение](https://github.com/yuwisasha/ptmk_test/assets/113836827/e8a8cb52-cfc0-44d5-9ace-d8ca27c51fd3)
